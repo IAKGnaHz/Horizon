@@ -22,11 +22,14 @@ EXIT_CODE=$?
 if [ $EXIT_CODE -eq 0 ]; then
     echo "[$(date)] Horizon 运行成功" >> "$LOG_FILE"
 
-    # 可选：清理 7 天前的日志
-    find "$LOG_DIR" -name "horizon-*.log" -mtime +7 -delete 2>/dev/null || true
+    # 提交新简报到 GitHub
+    cd "$PROJECT_DIR"
+    git add docs/_posts/
+    git commit -m "docs: update daily summary $(date +%Y-%m-%d)" || true
+    git push origin main >> "$LOG_FILE" 2>&1 || true
 
-    # 可选：发送通知（飞书/钉钉等）
-    # curl -X POST "$WEBHOOK_URL" -H "Content-Type: application/json" -d '{"msg_type":"text","content":{"text":"Horizon 日报已生成"}}'
+    # 清理 7 天前的日志
+    find "$LOG_DIR" -name "horizon-*.log" -mtime +7 -delete 2>/dev/null || true
 else
     echo "[$(date)] Horizon 运行失败，退出码: $EXIT_CODE" >> "$LOG_FILE"
 fi
